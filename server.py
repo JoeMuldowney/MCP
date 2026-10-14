@@ -2,17 +2,32 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 mcp = FastMCP("My MCP Server")
 
-
-BACKEND_ROOT = Path("/home/SolidJ/GetFit/getfit").resolve()
-FRONTEND_ROOT = Path("/home/SolidJ/GetFitUI/getfit-ui/src").resolve()
+BACKEND_ROOT = Path(os.environ["BACKEND"]).resolve()
+FRONTEND_ROOT = Path(os.environ["FRONTEND"]).resolve()
 
 def get_safe_path(project_root: str, filename: str) -> Path:
-    path = (project_root / filename).resolve()
+    roots = {
+        "backend": BACKEND_ROOT,
+        "frontend": FRONTEND_ROOT,
+    }
 
-    if not path.is_relative_to(project_root):
+    if project_root not in roots:
+        raise ValueError("project_root must be 'backend' or 'frontend'.")
+
+    root = roots[project_root]
+
+    # Resolve the path using the actual Path object (root)
+    path = (root / filename).resolve()
+
+    if not path.is_relative_to(root):
         raise ValueError("File is outside the project root.")
 
     return path
